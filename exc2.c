@@ -25,7 +25,7 @@ No* inserir(No *raiz, int valor) {
 
 void imprimirPre(No *raiz) {
     if(raiz != NULL) {
-        printf("%d ", raiz->conteudo);
+        printf(" %d", raiz->conteudo);
         imprimirPre(raiz->esquerda);
         imprimirPre(raiz->direita);
     }
@@ -34,7 +34,7 @@ void imprimirPre(No *raiz) {
 void imprimirIn(No *raiz) {
     if(raiz != NULL) {
         imprimirIn(raiz->esquerda);
-        printf("%d ", raiz->conteudo);
+        printf(" %d", raiz->conteudo);
         imprimirIn(raiz->direita);
     }
 }
@@ -43,34 +43,35 @@ void imprimirPos(No *raiz) {
     if(raiz !=NULL) {
         imprimirPos(raiz->esquerda);
         imprimirPos(raiz->direita);
-        printf("%d ", raiz->conteudo);
+        printf(" %d", raiz->conteudo);
     }
 }
 
 int main() {
     int c, n, valor, i = 1;
 
+    No *raiz = (No *)malloc(sizeof(No *));
     scanf("%d", &c);
 
     while (c) {
         No *raiz = NULL;
-        scanf("%d", &n);
+        scanf("%d%*c", &n);
 
         while (n) {
-            scanf("%d", &valor);
+            scanf("%d%*c", &valor);
 
             raiz = inserir(raiz, valor);
             n--;
         }
-        printf("Case %d:", i);
+        printf("Case %d:\n", i);
 
-        printf("\nPre.: ");
+        printf("Pre.:");
         imprimirPre(raiz);
-
-        printf("\nIn..: ");
+        printf("\n");
+        printf("In..:");
         imprimirIn(raiz);
-
-        printf("\nPost: ");
+        printf("\n");
+        printf("Post:");
         imprimirPos(raiz);
 
         i++;
