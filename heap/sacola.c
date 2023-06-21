@@ -37,91 +37,68 @@ int* remover(int vetor[], int tamanho, int numero, int* novoTamanho) {
     return novoVetor;
 }
 
-int checkFila(int adiciona[], int remove[] , int tamanhoR) {
-    int i = 0, contador = 0;
-
-    while(i < tamanhoR) {
-        if (adiciona[i] == remove[i]) contador++;
-        i++;
-    }
-
-    if (contador == i) return 1;
+int checkFila(int adiciona[], int remove) {
+    if (remove == adiciona[0]) return 1;
     else return 0;
 }
 
-int checkPilha(int adiciona[], int remove[], int tamanhoA , int tamanhoR) {
-    int i = 0, contador = 0;
-
-    while(i < tamanhoR) {
-        if (adiciona[tamanhoA-1] == remove[i]) contador++;
-        i++;
-        tamanhoA--;
-    }
-
-    if (contador == i) return 1;
+int checkPilha(int adiciona[], int remove, int tamanhoA) {
+    if (remove == adiciona[tamanhoA-1]) return 1;
     else return 0;
 }
 
-int checkFilaPrioridade(int adiciona[], int remove[], int tamanhoA , int tamanhoR) {
-    int i, j, contador = 0, aux = 0, k;
+int checkFilaPrioridade(int adiciona[], int remove, int tamanhoA) {
+    int j, contador = 0;
 
-    for (i = 0; i < tamanhoR; i++) {
-        k = 0;
-
-        for (j = 0; j < tamanhoA; j++) {
-            if (remove[i] >= adiciona[j]) k++;
-        }
-
-        if (k == tamanhoA-aux) contador++;
-        aux++;
+    for (j = 0; j < tamanhoA; j++) {
+        if (remove >= adiciona[j]) contador++;
     }
-    if (contador == tamanhoR) return 1;
+
+    if (contador == tamanhoA) return 1;
     else return 0;
 }
 
-int checkIfPossible(int adiciona[], int remove[], int tamanhoA, int tamanhoR) {
-    int i, j, aux, contador = 0;
+int checkIfPossible(int adiciona[], int remove, int tamanhoA) {
+    int j, contador = 0;
 
-    for (i = 0; i < tamanhoR; i++) {
-        aux = 0;
-        for (j = 0; j < tamanhoA; j++) {
-            if (remove[i] == adiciona[j]) aux++;
-        }
-
-        if (aux!= 0) contador++;
+    for (j = 0; j < tamanhoA; j++) {
+        if (remove == adiciona[j]) contador++;
     }
 
-    if (contador == tamanhoR) return 1;
+    if (contador!= 0) return 1;
     else return 0;
 }
 
-int comparaVetores(int adiciona[], int remove[], int tamanhoA, int tamanhoR) {
+int comparaVetores(int adiciona[], int remove, int tamanhoA) {
     int fila, pilha, filaPrioridade, i = 0, j = 0, possible;
 
-    possible = checkIfPossible(adiciona, remove, tamanhoA, tamanhoR);
+    possible = checkIfPossible(adiciona, remove, tamanhoA);
 
     if (!possible) return 4;
 
-    fila = checkFila(adiciona, remove, tamanhoR);
-    pilha = checkPilha(adiciona, remove, tamanhoA, tamanhoR);
-    filaPrioridade = checkFilaPrioridade(adiciona, remove, tamanhoA, tamanhoR);
-
-    //printf("fila: %d\npilha: %d\nfilaPrioridade: %d", fila, pilha, filaPrioridade);
+    fila = checkFila(adiciona, remove);
+    pilha = checkPilha(adiciona, remove, tamanhoA);
+    filaPrioridade = checkFilaPrioridade(adiciona, remove, tamanhoA);
 
     if (fila && !pilha && !filaPrioridade) return 1;
     else if (pilha && !fila && !filaPrioridade) return 2;
     else if (filaPrioridade && !fila && !pilha) return 3;
     else if (!filaPrioridade && !fila && !pilha) return 4;
-    else return 5;
+    else {
+        if (fila && pilha && filaPrioridade) return 5;
+        else if (!fila && pilha && filaPrioridade) return 6;
+        else if (fila && !pilha && filaPrioridade) return 7;
+        else if (fila && pilha && !filaPrioridade) return 8;
+    }
 }
 
 int main() {
-    int contador, funcao, numero, i, j, aux, tamanho, novoTamanho, k;
+    int contador, funcao, numero, i, j, aux, tamanho, novoTamanho;
     char resposta;
 
     while (scanf("%d", &contador) != EOF) {
-        int vetorAdiciona[1000], vetorRemove[1000], tipo[1000];
-        int fila=0, pilha=0, filaPrioridade=0, notSure = 0;
+        int vetorAdiciona[1000], tipo[1000];
+        int isFila=1, isPilha=1, isFilaPrioridade=1, impossible = 0;
         int* vetorNovo;
         i = 0, tamanho = 0;
         j = 0;
@@ -140,67 +117,58 @@ int main() {
             }
 
             else if (funcao == 2) {
-                vetorRemove[j] = numero;
-
-                tipo[j] = comparaVetores(vetorAdiciona, vetorRemove, i, j);
+                tipo[j] = comparaVetores(vetorAdiciona, numero, i);
                 vetorNovo = remover(vetorAdiciona, tamanho, numero, &novoTamanho);
-                
-                printf("\nVetor original: ");
-                for (int w = 0; w < tamanho; w++) {
-                    printf("%d ", vetorAdiciona[w]);
-                }
-                printf("\n");
 
+                i--;
                 tamanho = novoTamanho;
 
-                printf("\nNovo vetor: ");
                 for (int w = 0; w < novoTamanho; w++) {
                     vetorAdiciona[w] = vetorNovo[w];
-                    printf("%d ", vetorAdiciona[w]);
                 }
-                printf("\n");
 
                 j++;
             }
-            
 
         }
 
-        for (i = 0; i < j-1; i++) {
-            if (tipo[i]==4 || tipo[i+1]==4) {
-                //printf("impossible1\n");
+        for (i = 0; i < j; i++) {
+            if (tipo[i]==4) {
+                impossible = 1;
                 break;
             }
-            else if (tipo[i] != tipo[i+1]) {
-                if (tipo[i] == 5) {
-                    if(tipo[i+1] == 1) fila++;
-                    else if(tipo[i+1] == 2) pilha++;
-                    else if(tipo[i+1] == 3) filaPrioridade++;
-                }
-                else if (tipo[i+1] == 5) {
-                    if(tipo[i] == 1) fila++;
-                    else if(tipo[i] == 2) pilha++;
-                    else if(tipo[i] == 3) filaPrioridade++;
-                }
-                else {
-                    //printf("impossible2\n");
-                    break;
-                }
+            else if (tipo[i] == 1 && isFila != 0) {
+                isFila = 1;
+                isPilha = 0;
+                isFilaPrioridade = 0;
             }
-            else if (tipo[i] == tipo[i+1]) {
-                if (tipo[i] == 1) fila++;
-                else if (tipo[i] == 2) pilha++;
-                else if (tipo[i] == 3) filaPrioridade++;
-                else if (tipo[i] == 5) notSure++;
+            else if (tipo[i] == 2 && isPilha != 0) {
+                isPilha = 1;
+                isFilaPrioridade = 0;
+                isFila = 0;
+            }
+            else if (tipo[i] == 3 && isFilaPrioridade != 0) {
+                isFilaPrioridade = 1;
+                isFila = 0;
+                isPilha = 0;
+            }
+            else if (tipo[i] == 6) {
+                isFila = 0;
+            }
+            else if (tipo[i] == 7) {
+                isPilha = 0;
+            }
+            else if (tipo[i] == 8) {
+                isFilaPrioridade = 0;
             }
         }
 
-        //if (fila && !pilha && !filaPrioridade) printf("queue\n");
-        //else if (pilha && !fila && !filaPrioridade) printf("stack\n");
-        //else if (filaPrioridade && !fila && !pilha) printf("priority queue\n");
-        //else printf("not sure\n");
+        if (impossible) printf("impossible\n");
+        else if (isFila && !isPilha && !isFilaPrioridade) printf("queue\n");
+        else if (isPilha && !isFila && !isFilaPrioridade) printf("stack\n");
+        else if (isFilaPrioridade && !isFila && !isPilha) printf("priority queue\n");
+        else printf("not sure\n");
 
     }
-
 
 }
