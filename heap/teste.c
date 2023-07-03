@@ -1,121 +1,128 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int checkFila(int adiciona[], int remove[] , int tamanhoR) {
-    int i = 0, contador = 0;
+typedef struct {
+    int id;
+    int livre;
+} Funcionario;
 
-    while(i < tamanhoR) {
-        if (adiciona[i] == remove[i]) contador++;
-        i++;
-    }
+int pai(int i);
+int filhoEsquerda(int i);
+int filhoDireita(int i);
 
-    if (contador == i) return 1;
-    else return 0;
-}
+int verificaMaiorFuncionario(Funcionario a, Funcionario b);
 
-int checkPilha(int adiciona[], int remove[], int tamanhoA , int tamanhoR) {
-    int i = 0, contador = 0;
+void reHeapUp(Funcionario *heap, int i);
+void reHeapDown(Funcionario *heap, int i, int tamanho);
+void insere(Funcionario *heap, int livre, int id, int *tamanho);
+int deleta(Funcionario *heap, int *tamanho);
 
-    while(i < tamanhoR) {
-        if (adiciona[tamanhoA-1] == remove[i]) contador++;
-        i++;
-        tamanhoA--;
-    }
+int maior(int a, int b);
 
-    if (contador == i) return 1;
-    else return 0;
-}
-
-
-int checkFilaPrioridade(int adiciona[], int remove[], int tamanhoA , int tamanhoR) {
-    int i, j, contador = 0, aux = 0, k;
-
-    for (i = 0; i < tamanhoR; i++) {
-        k = 0;
-
-        for (j = 0; j < tamanhoA; j++) {
-            if (remove[i] >= adiciona[j]) k++;
-        }
-
-        if (k == tamanhoA-aux) contador++;
-        aux++;
-    }
-    if (contador == tamanhoR) return 1;
-    else return 0;
-}
-
-int checkIfPossible(int adiciona[], int remove[], int tamanhoA, int tamanhoR) {
-    int i, j, aux, contador = 0;
-
-    for (i = 0; i < tamanhoR; i++) {
-        aux = 0;
-        for (j = 0; j < tamanhoA; j++) {
-            if (remove[i] == adiciona[j]) aux++;
-        }
-
-        if (aux!= 0) contador++;
-    }
-
-    if (contador == tamanhoR) return 1;
-    else return 0;
-}
-
-int comparaVetores(int adiciona[], int remove[], int tamanhoA, int tamanhoR) {
-    int fila, pilha, filaPrioridade, i = 0, j = 0, possible;
-
-    possible = checkIfPossible(adiciona, remove, tamanhoA, tamanhoR);
-
-    if (!possible) return 4;
-
-    fila = checkFila(adiciona, remove, tamanhoR);
-    pilha = checkPilha(adiciona, remove, tamanhoA, tamanhoR);
-    filaPrioridade = checkFilaPrioridade(adiciona, remove, tamanhoA, tamanhoR);
-
-    printf("fila: %d\npilha: %d\nfilaPrioridade: %d", fila, pilha, filaPrioridade);
-
-    if (fila && !pilha && !filaPrioridade) return 1;
-    else if (pilha && !fila && !filaPrioridade) return 2;
-    else if (filaPrioridade && !fila && !pilha) return 3;
-    else if (!filaPrioridade && !fila && !pilha) return 4;
-    else return 5;
-}
 
 int main() {
-    int contador, funcao, numero, i, j, aux, tipo;
-    char resposta;
 
-    while (scanf("%d", &contador) != EOF) {
-        int vetorAdiciona[1000];
-        int vetorRemove[1000];
-        i = 0;
-        j = 0;
-        aux = 0;
+    int funcionariosTotal, clientesTotal;
+    int i;
+    int funcionarioTempo[10000];
 
-        while (aux < contador) {
+    scanf("%d %d", &funcionariosTotal, &clientesTotal);
 
-            scanf("%d %d", &funcao, &numero);
-            aux++;
-
-            if (funcao == 1) {
-                vetorAdiciona[i] = numero;
-                i++;
-            }
-
-            else if (funcao == 2) {
-                vetorRemove[j] = numero;
-                j++;
-            }
-            
-        }
-
-        tipo = comparaVetores(vetorAdiciona, vetorRemove, i, j);
-
-        if (tipo == 1) printf("queue\n");
-        else if (tipo == 2) printf("stack\n");
-        else if (tipo == 3) printf("priority queue\n");
-        else if (tipo == 4) printf("impossible\n");
-        else if (tipo == 5) printf("not sure\n");
-
+    for(i = 0; i < funcionariosTotal; i++) {
+        scanf("%d%*c", &funcionarioTempo[i]);
     }
 
+    int total = 0;
+  
+    Funcionario heap[funcionariosTotal];
+    int tamanho = 0;
+    for(i = 0; i < funcionariosTotal; i++) insere(heap, 0, i, &tamanho);
+
+    while(clientesTotal--) {
+        int clienteItens;
+        scanf("%d%*c", &clienteItens);
+        int id = heap[0].id;
+        int livre = heap[0].livre;
+        deleta(heap, &tamanho);
+        insere(heap, (livre + funcionarioTempo[id] * clienteItens), id, &tamanho);
+        total = maior(total, (livre + funcionarioTempo[id] * clienteItens));
+    }
+
+    printf("%d\n", total);
+
+    return 0;
+}
+
+int pai(int i) {
+    return (i - 1) / 2;
+}
+
+int filhoEsquerda(int i) {
+    return 2 * i + 1;
+}
+
+int filhoDireita(int i) {
+    return 2 * i + 2;
+}
+
+void reHeapUp(Funcionario *heap, int i) {
+    Funcionario aux;
+
+    while (i > 0 && !verificaMaiorFuncionario(heap[i], heap[pai(i)])) {
+        aux = heap[i];
+        heap[i] = heap[pai(i)];
+        heap[pai(i)] = aux;
+        
+        i = pai(i);
+    }
+}
+
+void reHeapDown(Funcionario *heap, int i, int tamanho) {
+    int maior = i;
+
+    if (filhoEsquerda(i) < tamanho && !verificaMaiorFuncionario(heap[filhoEsquerda(i)], heap[maior])) {
+        maior = filhoEsquerda(i);
+    }
+
+    if (filhoDireita(i) < tamanho && !verificaMaiorFuncionario(heap[filhoDireita(i)], heap[maior])) {
+        maior = filhoDireita(i);
+    }
+
+    if (maior != i) {
+        Funcionario aux;
+        
+        aux = heap[i];
+        heap[i] = heap[maior];
+        heap[maior] = aux;
+
+        reHeapDown(heap, maior, tamanho);
+    }
+}
+
+void insere(Funcionario *heap, int livre, int id, int *tamanho) {
+    heap[*tamanho].livre = livre;
+    heap[*tamanho].id = id;
+    reHeapUp(heap, *tamanho);
+    (*tamanho)++;
+}
+
+int deleta(Funcionario *heap, int *tamanho) {
+    int maior = heap[0].livre;
+    heap[0] = heap[*tamanho - 1];
+    (*tamanho)--;
+    reHeapDown(heap, 0, *tamanho);
+
+    return maior;
+}
+
+int verificaMaiorFuncionario(Funcionario a, Funcionario b){
+    if(a.livre > b.livre) return 1;
+    if(a.livre < b.livre) return 0;
+    if(a.livre == b.livre && a.id > b.id) return 1;
+    return 0;
+}
+
+int maior(int a, int b) {
+    if(b > a) return b;
+    return a;
 }
